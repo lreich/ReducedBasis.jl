@@ -22,7 +22,7 @@ The generated [`RBasis`](@ref) will contain `pod.n_vectors` singular vectors in 
 and all grid points in `parameters`. This means that `parameters` and `snapshots` generally
 have different lengths.
 """
-function assemble(H::AffineDecomposition, grid, pod::POD, solver_truth; psi0::Union{MPS,Nothing}=nothing)
+function assemble(H::AffineDecomposition, grid, pod::POD, solver_truth)
     # TODO: This should be solved by a type annotation and an appropriate abstract type
     #       and not an assertion
     (solver_truth isa DMRG) && ArgumentError("Only ED solvers are supported.")
@@ -34,7 +34,7 @@ function assemble(H::AffineDecomposition, grid, pod::POD, solver_truth; psi0::Un
     progbar = Progress(length(grid);
                        desc="Truth solving on $(size(grid)) grid...", enabled=pod.verbose)
     for (i, μ) in enumerate(grid)
-        Ψ₀  = isnothing(psi0) ? Matrix(qr(randn(size(H, 1), solver_truth.n_target)).Q) : psi0
+        Ψ₀  = Matrix(qr(randn(size(H, 1), solver_truth.n_target)).Q)
         sol = solve(H, μ, Ψ₀, solver_truth)
         vectors[i] = hcat(sol.vectors...)
         append!(parameters, fill(μ, length(sol.vectors)))
