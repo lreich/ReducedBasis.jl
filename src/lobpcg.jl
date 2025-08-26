@@ -1,4 +1,3 @@
-using DFTK  # TODO: remove when out-sourced
 using SuiteSparse: SuiteSparse
 
 # Eigensolver utility
