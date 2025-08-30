@@ -186,11 +186,11 @@ end
 
 solve(H::AffineDecomposition, μ, Ψ₀::MPS, dm::DMRG; eigsolve_krylovdim::Int = 2) = solve(H, μ, [Ψ₀], dm; eigsolve_krylovdim=eigsolve_krylovdim)
 
-function solve(H::AffineDecomposition, μ, ::Nothing, dm::DMRG)
+function solve(H::AffineDecomposition, μ, ::Nothing, dm::DMRG; eigsolve_krylovdim::Int = 2)
     # noprime(first.(siteinds(...)()) to obtain original sites
     sites = noprime.(first.(siteinds(H.terms[1].mpo)))
     Ψ₀ = fill(randomMPS(sites; linkdims=dm.sweeps.maxdim[1]), dm.n_states)
-    solve(H, μ, Ψ₀, dm)
+    solve(H, μ, Ψ₀, dm; eigsolve_krylovdim=eigsolve_krylovdim)
 end
 
 
