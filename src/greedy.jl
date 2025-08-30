@@ -173,10 +173,11 @@ function assemble(info::NamedTuple, H::AffineDecomposition, grid, greedy::Greedy
 end
 
 function assemble(H::AffineDecomposition, grid, greedy::Greedy, solver_truth, compressalg;
-                  μ_start=grid[1], callback=print_callback, psi0::Union{MPS,Nothing}=nothing, kwargs...)
+                  μ_start=grid[1], callback=print_callback, 
+                  psi0::Union{MPS,Nothing}=nothing, eigsolve_krylovdim::Int=2, kwargs...)
     info    = callback((; iteration=0, cache=(;), state=:start))
     Ψ_init  = isnothing(psi0) ? greedy.Ψ_init(info, (; H, grid, greedy, solver_truth, compressalg, kwargs...)) : psi0
-    truth   = solve(H, μ_start, Ψ_init, solver_truth)
+    truth   = solve(H, μ_start, Ψ_init, solver_truth; eigsolve_krylovdim=eigsolve_krylovdim)
     BᵀB     = overlap_matrix(truth.vectors, truth.vectors)
     basis   = RBasis(truth.vectors, fill(μ_start, length(truth.vectors)), I, BᵀB, BᵀB)
     h_cache = HamiltonianCache(H, basis)

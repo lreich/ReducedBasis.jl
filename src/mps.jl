@@ -147,17 +147,17 @@ The length of the `Ψ₀` vector determines the number of targeted states, given
 `dm.n_states > 1` and `dm.tol_degeneracy > 0`.
 When `nothing` is provided as an initial guess, `dm.n_states` random MPS are used.
 """
-function solve(H::AffineDecomposition, μ, Ψ₀::Vector{MPS}, dm::DMRG)
+function solve(H::AffineDecomposition, μ, Ψ₀::Vector{MPS}, dm::DMRG; eigsolve_krylovdim::Int = 2)
     observer = dm.observer()
     H_full = H(μ)
-    E₁, Ψ₁ = dmrg(H_full, Ψ₀[1], dm.sweeps; observer, outputlevel=0)
+    E₁, Ψ₁ = dmrg(H_full, Ψ₀[1], dm.sweeps; observer, outputlevel=0, eigsolve_krylovdim=eigsolve_krylovdim)
     values, vectors = [E₁,], [Ψ₁,]
 
     # Size of initial guess determines target multiplicity
     if length(Ψ₀) > 1 && dm.n_states > 1 && dm.tol_degeneracy > 0.0
         converging, n = true, 2
         while converging
-            E_deg, Ψ_deg = dmrg(H_full, vectors, Ψ₀[n], dm.sweeps; observer, outputlevel=0)
+            E_deg, Ψ_deg = dmrg(H_full, vectors, Ψ₀[n], dm.sweeps; observer, outputlevel=0, eigsolve_krylovdim=eigsolve_krylovdim)
             if abs(E_deg - values[end]) < dm.tol_degeneracy
                 push!(vectors, Ψ_deg)
                 push!(values, E_deg)
@@ -184,7 +184,7 @@ function solve(H::AffineDecomposition, μ, Ψ₀::Vector{MPS}, dm::DMRG)
     (; values, vectors, variances, iterations, maxtruncerr)
 end
 
-solve(H::AffineDecomposition, μ, Ψ₀::MPS, dm::DMRG) = solve(H, μ, [Ψ₀], dm)
+solve(H::AffineDecomposition, μ, Ψ₀::MPS, dm::DMRG; eigsolve_krylovdim::Int = 2) = solve(H, μ, [Ψ₀], dm; eigsolve_krylovdim=eigsolve_krylovdim)
 
 function solve(H::AffineDecomposition, μ, ::Nothing, dm::DMRG)
     # noprime(first.(siteinds(...)()) to obtain original sites
